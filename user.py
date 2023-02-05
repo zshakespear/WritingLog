@@ -10,7 +10,7 @@ This user class is meant to work with the engine in order to make engine a littl
 import json
 import pandas as pd
 from multipledispatch import dispatch as dp
-import date
+from datetime import date
 
 class user(object):
     root = 'c://users/zacos/Desktop/pyRepos/WritingLog/'
@@ -20,16 +20,14 @@ class user(object):
         with open(file,'r') as f:
             obj = json.load(f)
         self.username = obj['username']
-        self.econv = obj['econv']
-        self.pconv = obj['pconv']
+        self.conv = obj['conv']
         url = obj['log_add']
         self.log = pd.read_csv(url)
     
     @dp(dict)
     def __init__(self, indict):
         self.username = indict['username']
-        self.econv = indict['econv']
-        self.pconv = indict['pconv']
+        self.conv = indict['conv']
         url = indict['log_add']
         self.log = pd.read_csv(url)
         
@@ -40,8 +38,7 @@ class user(object):
         self.save_log(path+'/log.csv')
         outdict = {
             'username':self.username,
-            'econv':self.econv,
-            'pconv':self.pconv,
+            'conv':self.econv,
             'log_add':self.root+self.username+'/log.csv',
             }
         with open(path+'/user.json','w') as f:
@@ -49,9 +46,9 @@ class user(object):
     
     def add_words(self, numwords, flag, indate = None):
         if flag == 'e':
-            numwords *= self.econv
+            numwords *= self.conv
         elif flag == 'p':
-            numwords *= self.pconv
+            numwords *= self.conv
         if indate != None:
             new_entry = pd.DataFrame(
                 {'date': indate,

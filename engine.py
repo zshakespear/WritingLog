@@ -4,7 +4,7 @@ Created on Tue Jan  3 10:10:43 2023
 
 This program is meant to use the commnad line to help log the number of words written
 
-The command line should take one argument for the user, one argument for -d (drafting) or -e (editing) and then an integer. In the case of d, the integer is the number of words. In the case of e, the integer is the number of minutes spent editing.
+The command line should take one argument for the user, one argument for -d (drafting), -p (prepping), or -e (editing) and then an integer. In the case of d, the integer is the number of words. In the case of e or p, the integer is the number of minutes spent editing.
 
 -r means retrieve and then the integer is replaced by the date
 
@@ -19,12 +19,8 @@ The command line should take one argument for the user, one argument for -d (dra
 
 -t means tag and the integer is then replaced with a name for the project. 
 
--p means prep and there should be a separate conversion for that (lines 2 & 3)
-
 @author: zacos
 """
-#TODO: add -p
-#TODO: allow initialization of new users
 #TODO: allow tagging words with certain projects
 #TODO: allow graphical visualization of words over time
 #TODO: allow graphical visualization of words editing versus words drafting
@@ -33,7 +29,6 @@ The command line should take one argument for the user, one argument for -d (dra
 import sys
 import os
 import pandas as pd
-from datetime import date
 import user as u
 
 root = 'c://users/zacos/Desktop/pyRepos/WritingLog/'
@@ -110,43 +105,9 @@ def check_user(user_q):
         print('Did not find user')
         return False
 
-def check_log(user_q):
-    try: log = pd.read_csv(root+user_q+'/log.csv')
-    except:
-        print('Initializing new log')
-        new_log = pd.DataFrame(columns = ['date','words','mode'])
-        new_log.to_csv(root+user_q+'/log.csv',index=False)
-
-def check_conv(user_q):
-    try: f = open(root+user_q+'/conv.txt')
-    except:
-        print('Conversion file not found. Initializing...')
-        conv_init(user_q)
-    else:
-        length_test = []
-        for x in f:
-            length_test.append(x)
-        if len(length_test) != 4:
-            print('Conversion file is incomplete. Rewriting...')
-            conv_init(user_q)
-            
-def conv_init(user_q):
-    print('Editing conversion minutes to words:')
-    minutes0 = float_loop('minutes')
-    words0 = int_loop('words')
-    print('Prep conversion minutes to words:')
-    minutes1 = float_loop('minutes')
-    words1 = int_loop('words')
-    f = open(root+user_q+'/conv.txt','w')
-    f.write(minutes0+'\n')
-    f.write(words0+'\n')
-    f.write(minutes1+'\n')
-    f.write(words1+'\n')
-    f.close()
-
 def float_loop(message):
     while True:
-        out = input('Enter number of '+message)
+        out = input(message)
         try: int(out)
         except:
             try: float(out)
@@ -159,78 +120,12 @@ def float_loop(message):
 
 def int_loop(message):
     while True:
-        out = input('Enter number of '+message)
+        out = input(message)
         try: int(out)
         except:
             print('Non numerical value. Please try again.')
         else:
             return int(out)
-
-def get_econv(user_q):
-    with open(root+user_q+'/conv.txt') as f:
-        minutes = f.readline()
-        if int(minutes) != float(minutes):
-            minutes = float(minutes)
-        else:
-            minutes = int(minutes)
-        words = f.readline()
-        if int(words) != float(words):
-            words = float(words)
-        else:
-            words = int(words)
-    conv = words/minutes
-    return conv
-
-def get_pconv(user_q):
-    with open(root+user_q+'/conv.txt') as f:
-        f.readline()
-        f.readline()
-        minutes = f.readline()
-        if int(minutes) != float(minutes):
-            minutes = float(minutes)
-        else:
-            minutes = int(minutes)
-        words = f.readline()
-        if int(words) != float(words):
-            words = float(words)
-        else:
-            words = int(words)
-    conv = words/minutes
-    return conv
-
-def add_entry(user_q,mode, num, indate=None):
-    if mode == '-d' and indate==None:
-        new_entry = pd.DataFrame(
-            {'date': date.today(),
-             'words':int(num),
-             'mode':'d'},
-            index=[0])
-    if mode == '-e' and indate == None:
-        new_entry = pd.DataFrame(
-            {'date':date.today(),
-             'words':int(num)*get_econv(user_q),
-             'mode':'e'},
-             index=[0])
-    if mode == '-d' and indate!=None:
-        new_entry = pd.DataFrame(
-            {'date': indate,
-             'words':int(num),
-             'mode':'d'},
-            index=[0])
-    if mode == '-e' and indate!=None:
-        new_entry = pd.DataFrame(
-            {'date': indate,
-             'words':int(num),
-             'mode':'d'},
-            index=[0])
-    log = pd.read_csv(root+user_q+'/log.csv')
-    log = pd.concat([log, new_entry],ignore_index=True)
-    log.to_csv(root+user_q+'/log.csv',index=False)
-    
-def retrieve(user_q, date):
-    log = pd.read_csv(root+user_q+'/log.csv')
-    total = log[log['date']==date]['words'].sum()
-    print('Total words on',date,'is:',int(total))
 
 def help_flag():
     if sys.argv[1] == '-h':
@@ -238,45 +133,43 @@ def help_flag():
             for x in f:
                 print(x)
         sys.exit()
-
-def del_entry(userq):
-    log = pd.read_csv(root+userq+'/log.csv')
-    print(log)
-    to_del = int_loop('the index of the entry you wish to delete\n')
-    log.drop(labels=to_del,axis=0,inplace=True)
-    log.to_csv(root+userq+'/log.csv',index=False)
     
-
+def user_init(name):
+    print("User not found. Initializing new profile:")
+    print('Initizializing conversion minutes to words:')
+    minutes0 = float_loop('Enter number of minutes')
+    words0 = int_loop('Enter number of words')
+    log_add = root+name+'/log.csv'
+    new_log = pd.DataFrame(columns = ['date','words','mode'])
+    new_log.to_csv(log_add,index=False)
+    
+    init = {
+        'username':name,
+        'conv':words0/minutes0,
+        'log_add':log_add
+        }
+    u.user(init).to_json(root+name)
+    return u.user(init)
+    
 def main():
     help_flag()
-    comm_errCheck()
-    if len(sys.argv) == 4:
-        args = unpack_args()
-        user_q = args[1]
-        mode = args[2]
+    args = unpack_args()
+    username = args[1]
+    try: user_obj = u.user(root+username+'/user.json')
+    except: user_obj = user_init(username)
+    flag = args[2]
+    if flag in ('-d','-e','-p'):
         num2add = args[3]
-        date2add = None
-    elif len(sys.argv) == 3:
-        args = unpack_args()
-        user_q = args[1]
-        mode = args[2]
-        date2add=None
-    elif len(sys.argv) == 5:
-        args = unpack_args()
-        user_q=args[1]
-        mode = args[2]
-        num2add = args[3]
-        date2add = args[4]
-    else:
-        print("Wrong number of arguments",help_message)
-        sys.exit()
-    check_log(user_q)
-    if mode == '-d' or mode == '-e':
-        check_conv(user_q)
-        add_entry(user_q, mode, num2add, date2add)
-    if mode == '-r':
-        retrieve(user_q, num2add)
-    if mode == '-n':
-        del_entry(user_q)
+        try: date = args[4]
+        except: date = None
+        finally: user_obj.add_words(num2add,flag[1],date)
+    elif flag=='-n':
+        print(user_obj.log)
+        drop = int_loop("Enter the index of the entry you wish to delete\n")
+        user_obj.drop_entry(drop)
+    elif flag == '-r':
+        rdate = args[3]
+        rint = user_obj.retreive(rdate)
+        print('Total words on',rdate,"is:",rint)
 
 main()
