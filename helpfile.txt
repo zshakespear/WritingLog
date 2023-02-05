@@ -1,0 +1,7 @@
+To add an entry, enter your username and then -d, -e, or -p and then an integer. You have the option of providing a date as well in the form of YYYY-MM-DD.
+If you selected -d the integer will be added to your log as a number of words. If you provided a day, the entry will be added on that day. Otherwise, it will be added to today
+If you selected -e the integer will be taken as a number of minutes and converted to a number of words based on your user conversion rate.
+If you have not selected a conversion rate, you will be prompted to do so.
+To delete an entry, enter you username and then -n. Your log will be displayed and you will be prompted to enter the index of the entry you would like to drop. The entry chosen will then be deleted
+To retrieve the number of words written in a day (rounded to the nearest integer), enter your username and then -r followed by the date in the following format: YYYY-MM-DD
+More commands will be added soon.
